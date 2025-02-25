@@ -63,7 +63,9 @@ CREATE TABLE goals (
     target_date DATE,
     is_completed BOOLEAN DEFAULT false,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    title VARCHAR(255) NOT NULL,
+    category ENUM('Weight Loss', 'Muscle Gain', 'Endurance', 'Flexibility', 'General Fitness') NOT NULL DEFAULT 'General Fitness'
 );
 
 -- Add indexes for goals table

@@ -42,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $userId = $conn->insert_id;
                 
                 // Start the session and set session variables
+                session_start();  // Make sure session is started
                 $_SESSION['user_id'] = $userId;
                 
                 // Redirect to profile setup instead of showing success message

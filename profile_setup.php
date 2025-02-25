@@ -8,6 +8,20 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// Check if profile is already completed
+$conn = connectDB();
+$checkProfile = $conn->prepare("SELECT profile_completed FROM users WHERE user_id = ?");
+$checkProfile->bind_param("i", $_SESSION['user_id']);
+$checkProfile->execute();
+$result = $checkProfile->get_result();
+$profileData = $result->fetch_assoc();
+
+if ($profileData['profile_completed']) {
+    header('Location: dashboard.php');
+    exit();
+}
+$checkProfile->close();
+
 $message = '';
 $messageType = '';
 
@@ -32,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         if ($stmt->execute()) {
             $_SESSION['profile_completed'] = true;
+            $_SESSION['user_name'] = $name;
             header('Location: dashboard.php');
             exit();
         } else {
