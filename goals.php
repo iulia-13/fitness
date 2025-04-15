@@ -13,67 +13,34 @@ $messageType = '';
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $conn = connectDB();
+    
     if (isset($_POST['add_goal'])) {
-        // Add new goal
-        $title = trim($_POST['title']);
-        $category = $_POST['category'];
-        $description = trim($_POST['description']);
-        $target_date = $_POST['target_date'];
+        $sql = "INSERT INTO goals (user_id, title, category, description, target_date) 
+                VALUES ({$_SESSION['user_id']}, 
+                        '{$_POST['title']}', 
+                        '{$_POST['category']}', 
+                        '{$_POST['description']}', 
+                        '{$_POST['target_date']}')";
         
-        $conn = connectDB();
-        $stmt = $conn->prepare("INSERT INTO goals (user_id, title, category, description, target_date) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("issss", $_SESSION['user_id'], $title, $category, $description, $target_date);
-        
-        if ($stmt->execute()) {
+        if ($conn->query($sql)) {
             $message = "Goal added successfully!";
-            $messageType = 'success';
-        } else {
-            $message = "Error adding goal";
-            $messageType = 'error';
         }
-        $stmt->close();
-        $conn->close();
-    } elseif (isset($_POST['complete_goal'])) {
-        // Mark goal as completed
+    } 
+    elseif (isset($_POST['complete_goal'])) {
         $goal_id = $_POST['goal_id'];
-        
-        $conn = connectDB();
-        $stmt = $conn->prepare("UPDATE goals SET is_completed = 1 WHERE goal_id = ? AND user_id = ?");
-        $stmt->bind_param("ii", $goal_id, $_SESSION['user_id']);
-        $stmt->execute();
-        $stmt->close();
-        $conn->close();
-    } elseif (isset($_POST['delete_goal'])) {
+        $conn->query("UPDATE goals SET is_completed = 1 WHERE goal_id = $goal_id");
+    }
+    elseif (isset($_POST['delete_goal'])) {
         $goal_id = $_POST['goal_id'];
-        
-        $conn = connectDB();
-        $stmt = $conn->prepare("DELETE FROM goals WHERE goal_id = ? AND user_id = ?");
-        $stmt->bind_param("ii", $goal_id, $_SESSION['user_id']);
-        
-        if ($stmt->execute()) {
-            $message = "Goal deleted successfully!";
-            $messageType = 'success';
-            // Refresh the page to show updated list
-            header('Location: goals.php');
-            exit();
-        } else {
-            $message = "Error deleting goal";
-            $messageType = 'error';
-        }
-        $stmt->close();
-        $conn->close();
+        $conn->query("DELETE FROM goals WHERE goal_id = $goal_id");
     }
 }
 
-// Fetch user's goals
+// Get goals
 $conn = connectDB();
-$stmt = $conn->prepare("SELECT * FROM goals WHERE user_id = ? ORDER BY target_date ASC");
-$stmt->bind_param("i", $_SESSION['user_id']);
-$stmt->execute();
-$result = $stmt->get_result();
+$result = $conn->query("SELECT * FROM goals WHERE user_id = {$_SESSION['user_id']} ORDER BY target_date ASC");
 $goals = $result->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
-$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -81,18 +48,18 @@ $conn->close();
 <head>
     <title>Goals - FitTrack</title>
     <style>
-        * {
+        body {
+            background-color: lightblue;
+            font-family: Arial;
             margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            padding: 20px;
         }
 
-        /* Navigation Bar (same as dashboard) */
         .navbar {
-            background-color: #333;
+            background-color: white;
             padding: 15px 0;
             margin-bottom: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
 
         .nav-content {
@@ -105,7 +72,7 @@ $conn->close();
         }
 
         .nav-logo {
-            color: white;
+            color: #333;
             font-size: 24px;
             font-weight: bold;
             text-decoration: none;
@@ -117,157 +84,100 @@ $conn->close();
         }
 
         .nav-links a {
-            color: white;
+            color: #333;
             text-decoration: none;
             padding: 5px 10px;
         }
 
         .nav-links a:hover {
-            background-color: #555;
+            background-color: #f0f0f0;
             border-radius: 4px;
         }
 
-        /* Main Content */
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 30px;
+            display: flex;
+            gap: 20px;
         }
 
-        /* Form Styles */
-        .goal-form {
+        .form-section {
+            flex: 35%;
             background: white;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .goals-section {
+            flex: 60%;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         label {
             display: block;
             margin-bottom: 5px;
-            color: #333;
         }
 
-        input, textarea, select {
+        input, select, textarea {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 5px;
             margin-bottom: 10px;
         }
 
         textarea {
             height: 100px;
-            resize: vertical;
         }
 
         button {
-            background-color: #4CAF50;
+            background: #4CAF50;
             color: white;
-            padding: 10px 20px;
+            padding: 10px;
             border: none;
-            border-radius: 4px;
-            cursor: pointer;
             width: 100%;
         }
 
-        button:hover {
-            background-color: #45a049;
-        }
-
-        /* Goals List Styles */
-        .goals-list {
-            background: #f5f5f5;
-            padding: 20px;
-            border-radius: 8px;
-        }
-
-        .goal-item {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: block;
-        }
-
-        .goal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .goal-box {
+            background: #f9f9f9;
+            padding: 15px;
             margin-bottom: 10px;
-        }
-
-        .goal-title {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .goal-category {
-            display: inline-block;
-            padding: 3px 8px;
-            background: #4CAF50;
-            color: white;
-            border-radius: 12px;
-            font-size: 0.8em;
-            margin-bottom: 10px;
-        }
-
-        .goal-description {
-            color: #666;
-            margin: 10px 0;
-        }
-
-        .goal-date {
-            color: #888;
-            font-size: 0.9em;
-        }
-
-        .goal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .goal-actions button {
-            width: auto;
-            padding: 5px 15px;
-        }
-
-        .edit-btn {
-            background-color: #2196F3;
-        }
-
-        .delete-btn {
-            background-color: #f44336;
-        }
-
-        .complete-btn {
-            background-color: #4CAF50;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
+            border: none;
         }
 
         .completed {
             opacity: 0.7;
+            background: #f9f9f9;
         }
 
-        .completed .goal-title {
+        .completed h3 {
             text-decoration: line-through;
         }
 
-        .success { color: green; }
-        .error { color: red; }
+        .goal-actions {
+            margin-top: 10px;
+        }
+
+        .goal-actions button {
+            width: auto;
+            padding: 5px 10px;
+            margin-right: 5px;
+        }
+
+        .success {
+            color: green;
+        }
     </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-content">
             <a href="dashboard.php" class="nav-logo">FitTrack</a>
@@ -282,17 +192,18 @@ $conn->close();
     </nav>
 
     <div class="container">
-        <!-- Goal Form -->
-        <div class="goal-form">
+        <div class="form-section">
             <h2>Add New Goal</h2>
             <?php if ($message): ?>
-                <p class="<?php echo $messageType; ?>"><?php echo $message; ?></p>
+                <p class="success"><?php echo $message; ?></p>
             <?php endif; ?>
+
             <form method="POST">
                 <div class="form-group">
                     <label>Goal Title:</label>
                     <input type="text" name="title" required>
                 </div>
+
                 <div class="form-group">
                     <label>Category:</label>
                     <select name="category" required>
@@ -303,46 +214,42 @@ $conn->close();
                         <option value="General Fitness">General Fitness</option>
                     </select>
                 </div>
+
                 <div class="form-group">
-                    <label>Goal Description:</label>
+                    <label>Description:</label>
                     <textarea name="description" required></textarea>
                 </div>
+
                 <div class="form-group">
                     <label>Target Date:</label>
                     <input type="date" name="target_date" required>
                 </div>
+
                 <button type="submit" name="add_goal">Add Goal</button>
             </form>
         </div>
 
-        <!-- Goals List -->
-        <div class="goals-list">
+        <div class="goals-section">
             <h2>Your Goals</h2>
             <?php if (empty($goals)): ?>
                 <p>No goals added yet.</p>
             <?php else: ?>
                 <?php foreach ($goals as $goal): ?>
-                    <div class="goal-item <?php echo $goal['is_completed'] ? 'completed' : ''; ?>">
-                        <div class="goal-header">
-                            <div class="goal-title"><?php echo htmlspecialchars($goal['title']); ?></div>
-                            <div class="goal-category"><?php echo htmlspecialchars($goal['category']); ?></div>
-                        </div>
-                        <div class="goal-description"><?php echo htmlspecialchars($goal['description']); ?></div>
-                        <div class="goal-date">Target: <?php echo date('M d, Y', strtotime($goal['target_date'])); ?></div>
+                    <div class="goal-box <?php echo $goal['is_completed'] ? 'completed' : ''; ?>">
+                        <h3><?php echo $goal['title']; ?></h3>
+                        <p><strong>Category:</strong> <?php echo $goal['category']; ?></p>
+                        <p><strong>Description:</strong><br><?php echo $goal['description']; ?></p>
+                        <p><strong>Target Date:</strong> <?php echo date('M d, Y', strtotime($goal['target_date'])); ?></p>
                         
-                        <div class="goal-actions">
-                            <?php if (!$goal['is_completed']): ?>
+                        <?php if (!$goal['is_completed']): ?>
+                            <div class="goal-actions">
                                 <form method="POST" style="display: inline;">
                                     <input type="hidden" name="goal_id" value="<?php echo $goal['goal_id']; ?>">
-                                    <button type="submit" name="complete_goal" class="complete-btn">Complete</button>
+                                    <button type="submit" name="complete_goal">Complete</button>
+                                    <button type="submit" name="delete_goal" onclick="return confirm('Are you sure?')">Delete</button>
                                 </form>
-                            <?php endif; ?>
-                            
-                            <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this goal?');">
-                                <input type="hidden" name="goal_id" value="<?php echo $goal['goal_id']; ?>">
-                                <button type="submit" name="delete_goal" class="delete-btn">Delete</button>
-                            </form>
-                        </div>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>

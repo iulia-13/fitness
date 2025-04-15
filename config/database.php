@@ -1,32 +1,25 @@
 <?php
-// Database configuration
-define('DB_HOST', 'localhost');
-define('DB_USER', 'fitnessdb');
-define('DB_PASS', 'fitnessdb');
-define('DB_NAME', 'fitnessdb');
+// Database settings
+$db_host = 'localhost';     // (1)
+$db_user = 'fitnessdb';     // (2)
+$db_pass = 'fitnessdb';     // (3)
+$db_name = 'fitnessdb';     // (4)
 
-/**
- * Creates and returns a database connection
- * @return mysqli Database connection object
- * @throws Exception if connection fails
- */
+// Function to connect to database
 function connectDB() {
-    try {
-        // Disable error reporting for mysqli
-        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-        
-        // Create connection
-        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-        
-        // Set charset to ensure proper encoding
-        $conn->set_charset("utf8mb4");
-        
-        return $conn;
-    } catch (Exception $e) {
-        // Log error (in a production environment, you'd want to log this properly)
-        error_log("Database connection failed: " . $e->getMessage());
-        
-        // Show user-friendly message
-        die("Sorry, there was a problem connecting to the database. Please try again later.");
+    // Use global variables inside function
+    global $db_host, $db_user, $db_pass, $db_name;
+    
+    // Try to connect
+    $conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
+    
+    // Check if connection worked
+    if ($conn->connect_error) {
+        die("Database connection failed: " . $conn->connect_error);
     }
+    
+    // Set the character encoding
+    $conn->set_charset("utf8mb4");
+    
+    return $conn;
 } 

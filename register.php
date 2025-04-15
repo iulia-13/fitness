@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 session_start();  // Make sure session is started
                 $_SESSION['user_id'] = $userId;
                 
-                // Redirect to profile setup instead of showing success message
+                // Changed redirect to profile_setup.php
                 header('Location: profile_setup.php');
                 exit();
             } else {
