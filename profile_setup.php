@@ -28,16 +28,16 @@ $messageType = '';
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn = connectDB();
     
-    // Get and sanitize form data
-    $name = trim(filter_var($_POST['name'], FILTER_SANITIZE_STRING));
+    // Get form data
+    $name = trim($_POST['name']);
     $age = filter_var($_POST['age'], FILTER_VALIDATE_INT);
     $weight = filter_var($_POST['weight'], FILTER_VALIDATE_FLOAT);
     $height = filter_var($_POST['height'], FILTER_VALIDATE_FLOAT);
     $difficulty = $_POST['difficulty'];
     
     // Basic validation
-    if ($age < 16 || $age > 100) {
-        $message = "Age must be between 16 and 100";
+    if ($age < 16) {
+        $message = "You must be over 16";
         $messageType = 'error';
     } else {
         // Update user profile

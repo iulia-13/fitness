@@ -4,7 +4,7 @@ session_start();
 // Include the file that connects to my database
 require_once 'config/database.php';
 
-// Variable to show messages to the user (like "Plan created successfully!")
+// Variable to show messages to the user
 $message = '';
 
 // Check if someone submitted the form
@@ -39,14 +39,14 @@ $plans = $result->fetch_all(MYSQLI_ASSOC);
 <html>
 <head>
     <title>Plans - FitTrack</title>
-    <!-- My CSS styles -->
+    <!-- CSS styles -->
     <style>
         
         body {
             font-family: Arial;
             margin: 0;
             padding: 20px;
-            background-color: #f0f5ff;  /* Light blue background */
+            background-color: #f0f5ff;  
         }
 
         /* Style the top navigation bar */
@@ -75,9 +75,9 @@ $plans = $result->fetch_all(MYSQLI_ASSOC);
         /* Style the navigation links */
         .nav-links a {
             color: white;
-            text-decoration: none;
             padding: 5px 10px;
             margin-left: 20px;
+            text-decoration: none;
         }
 
         /* Success message style */
@@ -130,6 +130,20 @@ $plans = $result->fetch_all(MYSQLI_ASSOC);
             border: 1px solid #ddd;
             padding: 10px;
             margin-bottom: 10px;
+        }
+
+        .view-btn {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 8px 15px;
+            text-decoration: none;
+            border-radius: 3px;
+            margin-top: 10px;
+        }
+
+        .view-btn:hover {
+            background: #45a049;
         }
     </style>
 </head>
@@ -214,8 +228,7 @@ $plans = $result->fetch_all(MYSQLI_ASSOC);
                         <p>Category: <?php echo $plan['category']; ?></p>
                         <p>Duration: <?php echo $plan['duration']; ?> days</p>
                         <p>Difficulty: <?php echo $plan['difficulty_level']; ?></p>
-                        <p>Description: <?php echo $plan['description']; ?></p>
-                        <p>Plan Details:<br><?php echo nl2br($plan['plan_details']); ?></p>
+                        <a href="view_plan.php?plan_id=<?php echo $plan['plan_id']; ?>">View Plan</a>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>

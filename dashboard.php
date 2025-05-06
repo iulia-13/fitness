@@ -1,5 +1,5 @@
 <?php
-// Start the session so we can use $_SESSION
+// Start the session so I can use $_SESSION
 session_start();
 // Include the database connection file I made
 require_once 'config/database.php';
@@ -13,12 +13,12 @@ if (!isset($_SESSION['user_id'])) {
 $conn = connectDB();
 $user_id = $_SESSION['user_id'];
 
-// Fixed SQL query to use user_id
+//  SQL query to use user_id
 $sql = "SELECT * FROM users WHERE user_id = '$user_id'";
 $result = $conn->query($sql);
+$user = $result->fetch_assoc();
 
 if ($result && $result->num_rows > 0) {
-    $user = $result->fetch_assoc();
     $name = $user['name']; // 
 } else {
     $name = "User";
@@ -29,34 +29,30 @@ if ($result && $result->num_rows > 0) {
 <html>
 <head>
     <title>Dashboard - FitTrack</title>
-    <!-- My CSS styles -->
     <style>
-        /* Basic page styling */
         body {
-            background-color: #ADD8E6;
             font-family: Arial;
             margin: 0;
             padding: 20px;
+            background-color: #f0f5ff;
         }
 
-        /* Navigation bar styling */
+        /* Style the top navigation bar */
         .navbar {
-            background-color: #333; /* Dark background for navbar */
+            background-color: #333;
             padding: 15px 0;
-            margin-bottom: 30px;
         }
 
-        /* Center the navbar content */
+        /* Center the navigation content */
         .nav-content {
             max-width: 1200px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
-            align-items: center;
             padding: 0 20px;
         }
 
-        /* Style for my logo */
+        /* Style the logo */
         .nav-logo {
             color: white;
             font-size: 24px;
@@ -64,81 +60,70 @@ if ($result && $result->num_rows > 0) {
             text-decoration: none;
         }
 
-        /* Navigation links container */
-        .nav-links {
-            display: flex;
-            gap: 20px; /* Space between links */
-        }
-
         /* Style the navigation links */
         .nav-links a {
             color: white;
-            text-decoration: none;
             padding: 5px 10px;
+            margin-left: 20px;
+            text-decoration: none;
         }
 
-        /* Hover effect for links */
-        .nav-links a:hover {
-            background-color: #555;
-            border-radius: 4px;
-        }
-
-        /* Main content container */
+        /* Center the container */
         .container {
-            background: white;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        /* Style for the welcome message box */
-        .welcome-box {
-            border: 1px solid #ddd;
-            padding: 20px;
-            margin-bottom: 20px;
-            background: #f9f9f9;
-        }
-
-        /* Make the dashboard boxes side by side */
-        .dashboard-grid {
-            display: flex;
-            gap: 20px;
-        }
-
-        /* Style for each dashboard box */
-        .dashboard-box {
-            border: 1px solid #ddd;
-            padding: 15px;
-            width: 50%; /* Make boxes equal width */
-        }
-
-        /* Style the lists in the boxes */
-        .plan-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        /* Style each list item */
-        .plan-list li {
+        /* Left section styling */
+        .left-box {
+            float: left;
+            width: 35%;
             padding: 10px;
-            border-bottom: 1px solid #ddd;
+            background: white;
+            border-radius: 5px;
         }
 
-        /* Remove border from last item */
-        .plan-list li:last-child {
-            border-bottom: none;
+        /* Right section styling */
+        .right-box {
+            float: right;
+            width: 60%;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .profile-details {
+            padding: 10px;
+        }
+
+        .profile-details p {
+            margin: 10px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .profile-details strong {
+            color: #333;
         }
     </style>
 </head>
 <body>
-    <!-- Navigation bar -->
+    <!-- Navigation bar at the top -->
     <nav class="navbar">
         <div class="nav-content">
-            <!-- My website logo -->
             <a href="dashboard.php" class="nav-logo">FitTrack</a>
-            <!-- Navigation links -->
+            <!-- Links to other pages -->
             <div class="nav-links">
                 <a href="dashboard.php">Home</a>
                 <a href="plans.php">Plans</a>
@@ -149,33 +134,18 @@ if ($result && $result->num_rows > 0) {
         </div>
     </nav>
 
-    <!-- Main content -->
     <div class="container">
-        <!-- Welcome message box -->
-        <div class="welcome-box">
-            <!-- Show the user's name from the database -->
-            <h1>Welcome back, <?php echo htmlspecialchars($name); ?>!</h1>
-            <p>Track your fitness journey and achieve your goals with FitTrack.</p>
+        <div class="left-box">
+            <h2>Welcome, <?php echo htmlspecialchars($name); ?>!</h2>
+            <p>Welcome to your fitness dashboard.</p>
         </div>
 
-        <!-- Dashboard grid with two boxes -->
-        <div class="dashboard-grid">
-            <!-- Recent plans box -->
-            <div class="dashboard-box">
-                <h2>Recently Accessed Plans</h2>
-                <ul class="plan-list">
-                    <li>No plans accessed yet</li>
-                </ul>
-            </div>
-
-            <!-- Recommended plans box -->
-            <div class="dashboard-box">
-                <h2>Recommended for You</h2>
-                <ul class="plan-list">
-                    <li>Beginner Full Body Workout</li>
-                    <li>30-Day Fitness Challenge</li>
-                    <li>Basic Cardio Plan</li>
-                </ul>
+        <div class="right-box">
+            <h2>Your Profile</h2>
+            <div class="profile-details">
+                <p><strong>Weight:</strong> <?php echo htmlspecialchars($user['weight']); ?> kg</p>
+                <p><strong>Height:</strong> <?php echo htmlspecialchars($user['height']); ?> cm</p>
+                <p><strong>Difficulty Level:</strong> <?php echo htmlspecialchars($user['difficulty_level']); ?></p>
             </div>
         </div>
     </div>
